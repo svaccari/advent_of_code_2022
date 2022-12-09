@@ -1,4 +1,3 @@
-# 179712 < x
 def scenic_score(input_x, input_y):
     tree = lines[input_y][input_x]
     score = 1
