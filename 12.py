@@ -69,7 +69,7 @@ with open('12.txt', 'r') as f:
                     #print(current.position[0] + 1, current.position[1] + 1, lines[current.position[1]][current.position[0]])
                     path.append(current.position)
                     current = current.parent
-                print(f'path length = {len(path) - 1}')
+                print(f'path length = {len(path) - 1}') # part 1 = 425, part 2 = 418
 
             # Pop current off open list, add to closed list
             open_list.pop(current_index)
