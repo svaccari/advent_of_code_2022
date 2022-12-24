@@ -1,4 +1,4 @@
-import copy
+from collections import deque
 
 map_input = [
     '#.####################################################################################################',
@@ -98,58 +98,66 @@ def wind(map_current):
                     add_to_map(new_map, (x + 1, y), dir)
     return new_map
 
-goal = (w - 2, h - 1)
-
-def move(map_current, paths):
-    new_paths = []
-    for p in paths:
-        next = []
-        curr = p[len(p) - 1]
-        x = curr[0]
-        y = curr[1]
-        # down
-        if y < h - 2 or (y < h - 1 and x == w - 2):
-            next.append((x, y + 1))
-        # up
-        if y > 1:
-            next.append((x, y - 1))
-        # left
-        if x > 1 and y > 0:
-            next.append((x - 1, y))
-        # right
-        if x < w - 2 and y > 0:
-            next.append((x + 1, y))
-        # sort by distance to goal, keep best
-        min_dist = 9999
-        for n in next:
-            dist = abs(goal[0] - n[0]) + abs(goal[1] - n[1])
-            min_dist = min(min_dist, dist)
-        # create paths
-        for n in next:
-            dist = abs(goal[0] - n[0]) + abs(goal[1] - n[1])
-            if dist != min_dist:
-                continue
-            new_path = p.copy()
-            if n not in map_current and n not in new_path:
-                new_path.append(n)
-            if not new_path in new_paths:
-                new_paths.append(new_path)
-
-    return new_paths
-
-paths = [[(1, 0)]]
-step_count = 1
-while True:
-    map_current = wind(map_current)
-    step_count += 1
-    print(f'number of steps = {step_count}...')
-    paths = move(map_current, paths)
-    stop = False
-    for p in paths:
-        if goal in p:
-            stop = True
+def lcm(a, b):
+    if a > b:
+        greater = a
+    else:
+        greater = b
+    while(True):
+        if((greater % a == 0) and (greater % b == 0)):
+            lcm = greater
             break
-    if stop:
-        break
+        greater += 1
+    return lcm
 
-print(f'number of steps = {step_count}')
+lcm_result = lcm(w - 1, h - 1)
+
+map_iterations = []
+for it in range(0, lcm_result):
+    map_iterations.append(map_current)
+    map_current = wind(map_current)
+
+def move(map_current, curr):
+    next = [curr] # wait here
+    x = curr[0]
+    y = curr[1]
+    # down
+    if y < h - 2 or (y < h - 1 and x == w - 2):
+        next.append((x, y + 1))
+    # up
+    if y > 1 or (y > 0 and x == 1):
+        next.append((x, y - 1))
+    # left
+    if x > 1 and 0 < y and y < h - 1:
+        next.append((x - 1, y))
+    # right
+    if x < w - 2 and 0 < y and y < h - 1:
+        next.append((x + 1, y))
+    return next
+
+goals = [(w - 2, h - 1), (1, 0), (w - 2, h - 1)]
+queue = deque([((1, 0), 1, goals)])
+time_max = 0
+
+while queue:
+    curr, t, dest = queue.popleft()
+    if not dest:
+        break
+    map_current = map_iterations[t % lcm_result]
+    if t > time_max:
+        s = set([])
+        time_max = t
+
+    next = move(map_current, curr)
+    for pos in next:
+        if pos == dest[0]:  # this means we hit our next destination
+            print(f'number of steps = {t}')
+            dest.pop(0)
+            if not dest:
+                break
+            queue = deque([(pos, t + 1, dest)])
+            break
+        elif pos not in s and pos not in map_current:
+            s.add(pos)
+            queue.append((pos, t + 1, dest))
+
